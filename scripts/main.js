@@ -166,12 +166,12 @@ window.CalculatorApp = function(options) {
                 default:
                   return  {
                         result: null,
-                        error: "we have not that operator"
+                        error: "Choose an operator"
                     }
        
             }
             if (!Number.isInteger(result)) {
-                result = Number(result.toFixed(2));
+                result = Number(result);
             }
 
             return {
@@ -302,33 +302,20 @@ window.CalculatorApp = function(options) {
                 const currentRow = event.target.closest('.calculator-control-row')
                 const text  = currentRow.querySelector(".control-minimize-button").textContent 
                 const calculatorID = currentRow.dataset.id;
-                const calculator = this.calculators.find(item => item.id === calculatorID )
 
+
+                this.toggleCalculator(calculatorID)
           
-                
-                if(calculator.minimized){
-                    currentRow.querySelector(".control-minimize-button").textContent = "Minimize"
-                    calculator.minimized = false
-
-                }else{
-                    currentRow.querySelector(".control-minimize-button").textContent = "Open"
-                    calculator.minimized = true
-                }
             }
 
-                this.saveCalculators()
-                this.renderCards()
        })
        this.panel.addEventListener("click", (event) => {
         if (event.target.matches(".control-remove-button")) {
             const currentRow = event.target.closest('.calculator-control-row')
             const calculatorID = currentRow.dataset.id;
-            const newcalculators = this.calculators.filter(item => item.id !== calculatorID )
-            this.calculators = newcalculators
-          
-          
-            this.saveCalculators()
-            this.render()
+
+            this.removeCalculator(calculatorID)
+
         }
 
     });
@@ -355,15 +342,9 @@ window.CalculatorApp = function(options) {
         if (event.target.matches(".minimize-calculator-button")) {
             const currentCalculator = event.target.closest('.calculator')
             const currentCalculatorId = currentCalculator.dataset.id
-            const calculator = this.calculators.find(item => item.id === currentCalculatorId )
-            
-            if(calculator.minimized){
-                calculator.minimized = false
-            }else{
-                calculator.minimized = true 
-            }
-            this.saveCalculators()
-            this.render()
+
+
+            this.toggleCalculator(currentCalculatorId)
 
         }
       
@@ -373,10 +354,10 @@ window.CalculatorApp = function(options) {
         if (event.target.matches(".remove-calculator-button")) {
             const currentCalculator = event.target.closest('.calculator')
             const calculatorID = currentCalculator.dataset.id;
-            const newcalculators = this.calculators.filter(item => item.id !== calculatorID )
-            this.calculators = newcalculators
-            this.saveCalculators()
-            this.render()
+
+            this.removeCalculator(calculatorID)
+
+   
 
         }
      
@@ -391,11 +372,6 @@ window.CalculatorApp = function(options) {
                 const calculator = this.calculators.find(item => item.id === calculatorID )
                 calculator.title = event.target.value
             
-
-                
-                      
-             
-
                 this.saveCalculators()
                 this.renderCards()
               }
@@ -491,10 +467,16 @@ window.CalculatorApp = function(options) {
             }
         
             if(item.minimized){
-                if((item.result === "" || item.result == null)) {
+                if((item.result === "" && item.error == "")) {
                     minimizedResult.textContent = "-"
                 }else{
-                     minimizedResult.textContent = `${item.a} ${item.operation} ${item.b} = ${item.result}`
+                    if(item.result === "" && item.error !== ""){
+                        minimizedResult.textContent = item.error
+                        minimizedResult.classList.toggle("error-message", item.error !== "");
+                    }else{
+                        minimizedResult.textContent = `${item.a} ${item.operation} ${item.b} = ${item.result}`
+                    }
+                     
                 }
                
             } else{
