@@ -4,13 +4,8 @@
 
 body{
    margin: 0;
-   display: block;
 }
 
-header{
-   display: block;
-   unicode-bidi: isolate;
-}
 button{
    appearance: auto;
    cursor: pointer;
@@ -26,14 +21,6 @@ label {
    display: block;
    font-size: 11px;
    color: #718096;
-}
-
-/* Calculator focus animation */
-.calculator {
-   transition:
-       border-color 0.2s ease,
-       box-shadow 0.2s ease,
-       background-color 0.2s ease;
 }
 
 .calculator:focus {
@@ -58,12 +45,7 @@ label {
 .header-title-container p{
    color: #718096;
    line-height: 1.6;
-   display: block;
-   margin-block-start: 1em;
-   margin-block-end: 1em;
-   margin-inline-start: 0px;
-   margin-inline-end: 0px;
-   unicode-bidi: isolate;
+   margin: 1em 0;
 }
 
 /* Add calculator button styles*/
@@ -81,17 +63,7 @@ label {
    align-items: start;
 }
 
-/* control panel title container styles*/
-.control-panel-title{
-       display: block;
-       font-size: 1.5em;
-       margin-block-start: 0.83em;
-       margin-block-end: 0.83em;
-       margin-inline-start: 0px;
-       margin-inline-end: 0px;
-       font-weight: bold;
-       unicode-bidi: isolate;
-}
+
 .control-panel-buttons{
    display: flex;
    gap: 6px;
@@ -108,11 +80,6 @@ label {
    padding: 8px 4px;
    font-family: Inter, -apple-system, sans-serif;
    font-size: 11px;
-   cursor: pointer;
-   border: 1px solid #dce3ee;
-   background: white;
-   color: inherit;
-   border-radius: 8px;
 }
 
 .collapse-all-button:hover,
@@ -121,13 +88,7 @@ label {
    border-color: #96b8fa;
 }
 
-/* control panel emty stily*/
-.control-panel-empty
-{
-   font-size: 12px;
-   color: #7c899c;
-   line-height: 1.6;
-}
+
 
 .row-top input {
    width: 100%;
@@ -138,14 +99,12 @@ label {
    font-weight: 600;
    color: #334563;
    background: transparent;
+   flex: 1;
 }
 
 .row-top input:focus {
    border-bottom-color: #2878ef;
    outline: none;
-}
-.row-top input {
-   flex: 1;
 }
 
 /*control pannel footer styles*/
@@ -163,7 +122,7 @@ label {
    font-weight: 600;
 }
 
-/* control panel description styles*/
+.control-panel-empty,
 .control-panel-description{
    font-size: 12px;
    color: #7c899c;
@@ -175,15 +134,12 @@ label {
    padding: 48px 32px;
 }
 .control-panel{
-   box-sizing: border-box;
    background: white;
    border: 1px solid #e0e6f0;
    border-radius: 14px;
    padding: 20px;
    position: sticky;
    top: 20px;
-   display: block;
-   unicode-bidi: isolate;
 }
 .calculator-control-row {
    border: 1px solid #e0e7f2;
@@ -193,7 +149,7 @@ label {
    display: flex;
    flex-direction: column;
    gap: 12px;
-   transition: border-color .15s;
+  
 }
 .calculator-control-row:hover {
    border-color: #a9b9d3;
@@ -249,6 +205,12 @@ label {
    user-select: none;
    touch-action: none;
 }
+.control-drag-handle:active {
+   cursor: grabbing;
+}
+.drag-calculator-button:active {
+   cursor: grabbing;
+}
 
 .calculator.dragging,
 .calculator-control-row.dragging{
@@ -258,7 +220,7 @@ label {
 .drag-preview {
    position: fixed;
    z-index: 9999;
-   box-sizing: border-box;
+
    pointer-events: none;
 
    opacity: 0.98 !important;
@@ -311,9 +273,6 @@ label {
 .calculator.drop-after::before {
    content: "Place after";
 }
-
-
-
 
 /* Control Panel drag-and-drop indicators */
 
@@ -384,20 +343,12 @@ label {
    top: -24px;
 }
 
-
-
-.row-actions {
-   display: flex;
-   align-items: center;
-   gap: 5px;
-}
 .control-minimize-button {
    border: 1px solid #d6e0ee;
    border-radius: 10px;
    padding: 9px 13px;
    background: white;
    color: #334563;
-   cursor: pointer;
 }
 .control-minimize-button:hover {
    background: #f3f6fb;
@@ -419,8 +370,11 @@ label {
    border: 1px solid #dce5f1;
    border-radius: 13px;
    box-shadow: 0 5px 18px #22324a05;
-   transition: border-color .15s;
    min-width: 0;
+}
+.calculator,
+.calculator-control-row {
+   transition: border-color .15s;
 }
 .calculator-window-header{
    display: flex;
@@ -488,11 +442,7 @@ label {
    color: #243750;
    background: white;
 }
-.input-field-label{
-   display: block;
-   font-size: 11px;
-   color: #718096;
-}
+
 .input-field:focus-visible{
    outline: 3px solid #a5c5ff;
    outline-offset: 2px;
@@ -570,6 +520,16 @@ label {
 }
 .calculator [hidden] {
    display: none !important;
+}
+
+
+
+.calculator[draggable="true"] {
+   cursor: grab;
+}
+
+.calculator[draggable="true"] .drag-calculator-button {
+   cursor: grab;
 }
 
 
