@@ -490,6 +490,7 @@ window.CalculatorApp = function(options) {
                 event.target.closest('.calculator-control-row').setAttribute("draggable", isDragAllowed)
                 currentCalculator = event.target.closest('.calculator-control-row')
             }
+
         })
         controlDragField.addEventListener('mouseup', (event) =>{
             if(!currentCalculator) return
@@ -509,13 +510,47 @@ window.CalculatorApp = function(options) {
             }
             isDragging = true
             event.dataTransfer.setData("text/plain", currentCalculator.dataset.id);
-            
+
+            const dragPreview = currentCalculator.cloneNode(true);
+            dragPreview.classList.add('drag-preview')
+
        
         })
+
+
+
         controlDragField.addEventListener('dragover', (event) => {
             event.preventDefault();
+        
+            const targetCalculator = event.target.closest('.calculator-control-row');
+        
+            if (!targetCalculator) return;
+            if (!targetCalculator || targetCalculator === currentCalculator) return;
+            const targetCalculatorRect = targetCalculator.getBoundingClientRect();
+        
+            let position = event.clientY - targetCalculatorRect.top;
+            let targetCalculatorHalfHeight = targetCalculatorRect.height / 2;
+        
+            targetCalculator.classList.remove('drop-before', 'drop-after');
+        
+            if (position < targetCalculatorHalfHeight) {
+                targetCalculator.classList.add('drop-before');
+            } else {
+                targetCalculator.classList.add('drop-after');
+            }
+           
+        })
+        controlDragField.addEventListener('dragleave', (event) => {
+            const targetCalculator = event.target.closest('.calculator-control-row');
+            if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
+                return;
+            }
+        
+            if (!targetCalculator) return;
+        
+            targetCalculator.classList.remove('drop-before', 'drop-after');
+        })
 
-        });
         controlDragField.addEventListener('drop', (event) =>{
             const calcId = event.dataTransfer.getData("text/plain")
 
@@ -572,8 +607,13 @@ window.CalculatorApp = function(options) {
                  }
                 }
              }
-        
+
+            
+             controlDragField.querySelectorAll('.calculator-control-row').forEach((calculator) => {
+                calculator.classList.remove('drop-before', 'drop-after');
+            });
         })
+        
         controlDragField.addEventListener('dragend', (event) =>{
             isDragAllowed = false
             isDragging = false;
@@ -581,7 +621,6 @@ window.CalculatorApp = function(options) {
             currentCalculator = null
             this.moveCalculator(true)
             
-
         })
 
 
@@ -637,8 +676,35 @@ window.CalculatorApp = function(options) {
         })
         dragField.addEventListener('dragover', (event) => {
             event.preventDefault();
-
-        });
+        
+            const targetCalculator = event.target.closest('.calculator');
+        
+            if (!targetCalculator) return;
+            if (!targetCalculator || targetCalculator === currentCalculator) return;
+            const targetCalculatorRect = targetCalculator.getBoundingClientRect();
+        
+            let position = event.clientX - targetCalculatorRect.left;
+            let targetCalculatorHalfWidth = targetCalculatorRect.width / 2;
+        
+            targetCalculator.classList.remove('drop-before', 'drop-after');
+        
+            if (position < targetCalculatorHalfWidth) {
+                targetCalculator.classList.add('drop-before');
+            } else {
+                targetCalculator.classList.add('drop-after');
+            }
+           
+        })
+        dragField.addEventListener('dragleave', (event) => {
+            const targetCalculator = event.target.closest('.calculator');
+            if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
+                return;
+            }
+        
+            if (!targetCalculator) return;
+        
+            targetCalculator.classList.remove('drop-before', 'drop-after');
+        })
         dragField.addEventListener('drop', (event) =>{
             const calcId = event.dataTransfer.getData("text/plain")
 
@@ -697,7 +763,9 @@ window.CalculatorApp = function(options) {
             
                
              }
-
+             dragField.querySelectorAll('.calculator').forEach((calculator) => {
+                calculator.classList.remove('drop-before', 'drop-after');
+            });
         
         })
         dragField.addEventListener('dragend', (event) =>{
