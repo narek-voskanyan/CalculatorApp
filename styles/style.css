@@ -61,6 +61,10 @@ label {
    color: white;
 }
 
+.advansed-druggable-collor{
+   color: #000
+}
+
 /* calculator-workspace is contain style for the calculator workspace main styles*/
 .calculator-workspace{
    display: grid;
@@ -255,7 +259,8 @@ label {
 }
 
 .calculator.drop-before,
-.calculator.drop-after {
+.calculator.drop-after,
+.advansed-style {
    position: relative;
    outline: 2px dashed #2563eb;
    outline-offset: -2px;
