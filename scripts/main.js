@@ -148,6 +148,14 @@ window.CalculatorApp = function(options) {
       
     };
 
+    this.updateCheckboxStyleForDrag = function(){
+        if(this.advansedDraggable.checked){
+            document.querySelector('.add-calculator-container > label').classList.add("advansed-druggable-collor")
+           }else{
+            document.querySelector('.add-calculator-container > label').classList.remove("advansed-druggable-collor")
+           }
+    }
+
     
     this.calculate = function(a, b, operation) {
         // TODO: return { result: ..., error: ... }.
@@ -303,16 +311,10 @@ window.CalculatorApp = function(options) {
         }
         
     })
-    ////////////////////use later to save in localestorige//////////////////////
+    
     this.advansedDraggable.addEventListener("change", (event) =>{
-
-
-       if(this.advansedDraggable.checked){
-        document.querySelector('.add-calculator-container > label').classList.add("advansed-druggable-collor")
-       }else{
-        document.querySelector('.add-calculator-container > label').classList.remove("advansed-druggable-collor")
-       }
-        
+       this.updateCheckboxStyleForDrag()
+       this.saveCalculators()
 
     })
 
@@ -977,6 +979,8 @@ window.CalculatorApp = function(options) {
     this.render = function() {
         this.renderCards();
         this.renderPanel();
+        this.updateCheckboxStyleForDrag()
+
     };
 
     this.updateCalculatorView = function(id) {
@@ -1028,6 +1032,16 @@ window.CalculatorApp = function(options) {
             localStorage.setItem("nextId", this.nextId)
         }catch(error){
             console.error("Failed to save nextID:", error);
+            return;
+        }
+
+        try{
+           const aaa =  document.querySelector(".advansed-druggable").checked
+            const checkedValue = JSON.stringify(aaa)
+            
+            localStorage.setItem("checkbox", checkedValue)
+        }catch(error){
+            console.error("Failed to save checkbox value:", error);
             return;
         }
     };
@@ -1106,11 +1120,18 @@ window.CalculatorApp = function(options) {
         }
         this.calculators = validCalculators
 
-
-
         if(this.calculators.length === 0){
             this.nextId = 1
         }
+
+
+        const currentstatus = localStorage.getItem('checkbox')
+
+        if(currentstatus == null) return
+
+        const value = JSON.parse(currentstatus)
+
+        this.advansedDraggable.checked  = value
 
 
     };
