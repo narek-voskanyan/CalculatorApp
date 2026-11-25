@@ -549,7 +549,7 @@ window.CalculatorApp = function(options) {
         
             targetCalculator.classList.remove('drop-before', 'drop-after');
 
-            controlDragField.querySelectorAll('.alculator-control-row.drag-target').forEach((calculator) => {
+            controlDragField.querySelectorAll('.calculator-control-row.drag-target').forEach((calculator) => {
                 if (calculator !== targetCalculator) {
                     calculator.classList.remove('drag-target');
                 }
@@ -581,15 +581,23 @@ window.CalculatorApp = function(options) {
 
             const draggedCaculator = controlDragField.querySelector(`[data-id="${calcId}"]`);
             const targetCaculator = event.target.closest('.calculator-control-row')
+
+
+
+
+      
+
+
             if(!draggedCaculator) return;
             if(draggedCaculator === targetCaculator) return;
 
             const fieldRect = controlDragField.getBoundingClientRect()
-  
+
 
              if(event.clientX >= fieldRect.left  && event.clientX <= fieldRect.right &&
                 event.clientY >= fieldRect.top && event.clientY <= fieldRect.bottom
              ){
+                
                 if(targetCaculator){
                     const targetCaulatorRect = targetCaculator.getBoundingClientRect()
 
@@ -598,10 +606,30 @@ window.CalculatorApp = function(options) {
                     let targetCaculatorWidthHapfPart = targetCaulatorRect.height / 2
 
 
+
+
+                                            
+                    const arrr = Array.from(document.querySelectorAll('.calculator-control-list > .calculator-control-row[data-id]'));
+                    const ids = Array.from(
+                        document.querySelectorAll('.calculator-control-list > .calculator-control-row[data-id]'),
+                        el => el.dataset.id
+                      );
+                   const draggedCaculatorNumber = ids.indexOf(calcId)
+                   const targetCaculatorNumber = ids.indexOf(targetCaculator.dataset.id)
+        
+                       
                                             
                     if(isAdvasedOn){
+                        if(targetCaculatorNumber + 1  === draggedCaculatorNumber ){
+                            targetCaculator.before(draggedCaculator)
+                            return
+                        }
+
+
+
                         if(event.clientY > targetCaulatorRect.top && event.clientY < targetCaulatorRect.bottom){
                             targetCaculator.after(draggedCaculator)
+                            
                             return
                         }
                     }
@@ -611,11 +639,14 @@ window.CalculatorApp = function(options) {
                     }else{
                         targetCaculator.before(draggedCaculator)
                     }
-              
-
-
-                    
+            
                 }else{
+
+
+
+
+
+
                     const allCaculators = Array.from(controlDragField.querySelectorAll(".calculator-control-row")).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
                     
                     const lastCalculator = allCaculators[allCaculators.length - 1]
@@ -623,7 +654,11 @@ window.CalculatorApp = function(options) {
                     if(allCaculators.length == 0) return
                     const lastCalculatorRect = lastCalculator.getBoundingClientRect()
 
+                    
+
                     if(event.clientY > lastCalculatorRect.button){
+
+
                         controlDragField.append(draggedCaculator)
                         return
                     }
@@ -642,10 +677,11 @@ window.CalculatorApp = function(options) {
                 }
              }
 
-            
+      
              controlDragField.querySelectorAll('.calculator-control-row').forEach((calculator) => {
                 calculator.classList.remove('drop-before', 'drop-after');
             });
+           
         })
         controlDragField.addEventListener('dragend', (event) =>{
             isDragAllowed = false
@@ -774,8 +810,24 @@ window.CalculatorApp = function(options) {
                         let targetCaculatorWidthHapfPart = targetCaulatorRect.width / 2
 
 
+
+                        const arrr = Array.from(document.querySelectorAll('.calculator-list > .calculator[data-id]'));
+                        const ids = Array.from(
+                            document.querySelectorAll('.calculator-list > .calculator[data-id]'),
+                            el => el.dataset.id
+                          );
+                         
+                       const draggedCaculatorNumber = ids.indexOf(calcId)
+                       const targetCaculatorNumber = ids.indexOf(targetCaculator.dataset.id)
+                
+
+
                         
                         if(isAdvasedOn){
+                            if(targetCaculatorNumber + 1  === draggedCaculatorNumber){
+                                targetCaculator.before(draggedCaculator)
+                                return
+                            }
                             if(event.clientX > targetCaulatorRect.left && event.clientX < targetCaulatorRect.right){
                                 targetCaculator.after(draggedCaculator)
                                 return
