@@ -1,16 +1,3 @@
-/* Learning skeleton: implement the methods marked TODO.
-   Plain JavaScript. No jQuery or drag-and-drop libraries.
-   Required HTML elements: #cards, #panel-list and #add.
-   This is a structure to complete, not a working calculator.
-   Load this file with <script src="calc4-skeleton.js" defer></script>. */
-
-/* -------------------- Your drag-and-drop component -------------------- */
-// Design and implement your own reusable drag-and-drop component.
-// Use mousedown, mousemove and mouseup, without native HTML drag-and-drop.
-// Reuse the same component for the cards and the control panel.
-// Choose its methods, options and event contract yourself.
-// Let CalculatorApp update the shared state and save the resulting order.
-
 window.CalculatorApp = function(options) {
     var self = this;
 
@@ -474,7 +461,569 @@ window.CalculatorApp = function(options) {
 
         })
     };
+    
+//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+////////////////////////////
+    this.initDrag = function() {
 
+        // TODO: connect your drag-and-drop component to both views.
+        // Choose how it reports the requested reorder to CalculatorApp.
+        // Keep drag mechanics separate from calculator data and storage.
+        
+        
+        let dragField
+
+
+        let draggedCalculatorFieldClass
+        let draggedCalculatorClass
+        let draggedCalculatorButtonClass
+
+
+
+
+
+
+
+        //dragable value for calculators
+        let isDragAllowed = false
+        //dragstart value 
+        let isDragging = false
+        let currentCalculator = null
+
+
+
+        document.addEventListener('mousedown', (event) =>{
+            const controlField = event.target.closest('.calculator-control-list');
+            const mainField = event.target.closest('.calculator-list');
+
+
+            if(controlField){
+                draggedElement = event.target.closest('.calculator-control-row');
+                dragField = event.target.closest('.calculator-control-list');
+                draggedCalculatorClass = '.calculator-control-row'
+                draggedCalculatorButtonClass = '.control-drag-handle'
+                draggedCalculatorFieldClass = '.calculator-control-list'
+               
+            }else if(mainField){
+                draggedElement = event.target.closest('.calculator');
+                dragField = event.target.closest('.calculator-list');
+                draggedCalculatorClass = '.calculator'
+                draggedCalculatorButtonClass = '.drag-calculator-button'
+                draggedCalculatorFieldClass = '.calculator-list'
+                
+            }
+            
+
+
+
+            if(event.target.closest(draggedCalculatorButtonClass)){
+                isDragAllowed = true
+                event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                currentCalculator = event.target.closest(draggedCalculatorClass)
+            }
+
+            
+
+        })
+        document.addEventListener('mouseup', (event) =>{
+            if(!currentCalculator) return
+            if(event.target.closest(draggedCalculatorButtonClass)){
+                isDragAllowed = false
+                event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                if(!isDragging){
+                    currentCalculator = null
+    
+                }
+            }
+        })
+        document.addEventListener('dragstart', (event) =>{
+            if(!isDragAllowed){
+                event.preventDefault()
+                return
+            }
+            isDragging = true
+            event.dataTransfer.setData("text/plain", currentCalculator.dataset.id);
+
+            const dragPreview = currentCalculator.cloneNode(true);
+            dragPreview.classList.add('drag-preview')
+
+       
+        })
+        document.addEventListener('dragover', (event) => {
+            event.preventDefault();
+        
+            const targetCalculator = event.target.closest(draggedCalculatorClass);
+        
+            if (!targetCalculator) return;
+            if (!targetCalculator || targetCalculator === currentCalculator) return;
+        
+          
+
+            dragField.querySelectorAll(`${draggedCalculatorClass}.drag-target`).forEach((calculator) => {
+                if (calculator !== targetCalculator) {
+                    calculator.classList.remove('drag-target');
+                }
+            });
+            targetCalculator.classList.add('drag-target');
+           
+            targetCalculator.classList.add('advansed-style');
+            
+
+           
+        })
+        document.addEventListener('dragleave', (event) => {
+            const targetCalculator = event.target.closest(draggedCalculatorClass);
+            if (!targetCalculator) return;
+            if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
+                return;
+            }
+            targetCalculator.classList.remove('drag-target');
+            targetCalculator.classList.remove('advansed-style');
+        })
+        document.addEventListener('drop', (event) =>{
+            const calcId = event.dataTransfer.getData("text/plain")
+
+            const draggedCaculator = dragField.querySelector(`[data-id="${calcId}"]`);
+            const targetCaculator = event.target.closest(draggedCalculatorClass)
+
+
+
+            if(!draggedCaculator) return;
+            if(draggedCaculator === targetCaculator) return;
+
+            const fieldRect = dragField.getBoundingClientRect()
+           
+
+             if(event.clientX >= fieldRect.left  && event.clientX <= fieldRect.right &&
+                event.clientY >= fieldRect.top && event.clientY <= fieldRect.bottom
+             ){
+               
+             
+                if(targetCaculator){
+                    const targetCaulatorRect = targetCaculator.getBoundingClientRect()
+
+                     
+                    const arrr = Array.from(document.querySelectorAll(`${draggedCalculatorFieldClass} > ${draggedCalculatorClass}[data-id]`));
+                    
+                    const ids = Array.from(
+                        dragField.querySelectorAll(`${draggedCalculatorFieldClass} > ${draggedCalculatorClass}[data-id]`),
+                        el => el.dataset.id
+                      );
+                   const draggedCaculatorNumber = ids.indexOf(calcId)
+                   const targetCaculatorNumber = ids.indexOf(targetCaculator.dataset.id)
+        
+                      if(draggedCalculatorClass === '.calculator-control-row'){
+                        if(targetCaculatorNumber + 1  === draggedCaculatorNumber ){
+                            targetCaculator.before(draggedCaculator)
+                            return
+                        }
+
+                        if(event.clientY > targetCaulatorRect.top && event.clientY < targetCaulatorRect.bottom){
+                            targetCaculator.after(draggedCaculator)
+                            
+                            return
+                        }
+                    }else if(draggedCalculatorClass === '.calculator'){
+                      
+                            if(targetCaculatorNumber + 1  === draggedCaculatorNumber){
+                                targetCaculator.before(draggedCaculator)
+                                return
+                            }
+                            if(event.clientX > targetCaulatorRect.left && event.clientX < targetCaulatorRect.right){
+                                targetCaculator.after(draggedCaculator)
+                                return
+                            }
+                    }
+            
+                }else{
+
+                    
+                    const allCaculators = Array.from(document.querySelectorAll(draggedCalculatorClass)).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
+                    const lastCalculator = allCaculators[allCaculators.length - 1]
+                    if(allCaculators.length == 0) return
+                    const lastCalculatorRect = lastCalculator.getBoundingClientRect()
+                    
+                    if(draggedCalculatorClass === '.calculator-control-row'){
+                       
+                        if(event.clientY > lastCalculatorRect.button){
+                        dragField.append(draggedCaculator)
+                        return
+                    }
+
+                
+
+                 for( let i = 0; i < allCaculators.length -1; i ++){
+                        const caculatorRect = allCaculators[i].getBoundingClientRect()
+        
+                        if(caculatorRect.button < event.clientY){
+                            allCaculators[i].after(draggedCaculator)
+                            return
+                        } else if(event.clientY < caculatorRect.top){
+                            dragField.prepend(draggedCaculator)
+                        return
+                    }
+                 }
+
+                    }else if(draggedCalculatorClass === '.calculator'){
+                        if(event.clientX > lastCalculatorRect.right){
+                            dragField.append(draggedCaculator)
+                            return
+                        }
+    
+                        for( let i = 0; i < allCaculators.length -1; i ++){
+                            const caculatorRect = allCaculators[i].getBoundingClientRect()
+            
+                            if(caculatorRect.right < event.clientX){
+                                allCaculators[i].after(draggedCaculator)
+                                return
+                            } else if(event.clientX < caculatorRect.left){
+                            dragField.prepend(draggedCaculator)
+                            return
+                        }
+                     }
+                    }
+
+
+
+
+                }
+             }
+             
+           
+        })
+        document.addEventListener('dragend', (event) =>{
+            isDragAllowed = false
+            isDragging = false;
+            event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+            currentCalculator = null
+            dragField.querySelectorAll(draggedCalculatorClass).forEach((calculator) => {
+                calculator.classList.remove('drag-target', 'advansed-style');
+            });
+            if(draggedCalculatorClass === '.calculator-control-row'){
+                this.moveCalculator(true)
+            }else if(draggedCalculatorClass === '.calculator'){
+                this.moveCalculator()
+            }
+            
+        })
+
+    };
+
+    /* -------------------- Rendering -------------------- */
+    this.renderCards = function() {
+        // TODO: display this.calculators as cards.
+        // You can adapt your existing Calculator class for this view.
+        //clean caculatores field
+        this.cards.innerHTML = "";
+      
+        this.calculators.forEach(item => {
+            const clone = this.calculatorTemplate.content.cloneNode(true);
+            clone.querySelector(".calculator").dataset.id = item.id;
+  
+            clone.querySelector(".calculator-window-title").textContent  = item.title
+            clone.querySelector(".first-number").value = item.a;
+            clone.querySelector(".second-number").value = item.b;
+
+            const calculatorContent = clone.querySelector(".calculator-content");
+            const minimizedContent = clone.querySelector(".calculator-minimized-content");
+            const minimizedResult = clone.querySelector(".calculator-minimized-result");
+            const minimizeButton = clone.querySelector(".minimize-calculator-button")
+
+            
+
+            if(item.minimized){
+                calculatorContent.hidden = true;
+                minimizedContent.hidden = false;
+                minimizeButton.textContent = "+"
+
+            }else{
+                calculatorContent.hidden = false;
+                minimizedContent.hidden = true;
+                minimizeButton.textContent = "-"
+            }
+        
+            if(item.minimized){
+                if((item.result === "" && item.error == "")) {
+                    minimizedResult.textContent = "-"
+                }else{
+                    if(item.result === "" && item.error !== ""){
+                        minimizedResult.textContent = item.error
+                        minimizedResult.classList.toggle("error-message", item.error !== "");
+                    }else{
+                        minimizedResult.textContent = `${item.a} ${item.operation} ${item.b} = ${item.result}`
+                    }
+                     
+                }
+               
+            } else{
+                minimizedResult.textContent = ""
+            }
+
+
+            //checkbox
+            clone.querySelector(".clear-operator-checkbox").checked = item.resetOperation
+
+
+
+            const operators = clone.querySelectorAll(".operator-option");
+            operators.forEach((button) =>{
+                if(button.dataset.operatorValue === item.operation){
+                    button.setAttribute("aria-pressed", "true")
+                }else{
+                    button.setAttribute("aria-pressed", "false")
+                }
+            })
+
+
+
+                 //result field 
+             const resultField = clone.querySelector(".result")
+
+            resultField.classList.toggle("error-message", item.error !== "");
+
+            if (item.error !== "")  {
+                resultField.textContent = item.error;
+            }  else if (item.result !== "" && item.result != null) {
+                resultField.textContent = item.result;
+            } else {
+                resultField.textContent = "—";
+            }
+
+            this.cards.append(clone)
+
+        })
+
+     
+        
+    };
+
+    this.renderPanel = function() {
+        // TODO: display the same array as control panel rows
+        this.panel.innerHTML = ""
+     
+        this.calculators.forEach(item => {
+
+            const clone = this.controlPanelTamplate.content.cloneNode(true);
+            clone.querySelector(".calculator-control-row").dataset.id = item.id;
+            const controlPanellResultField = clone.querySelector(".control-calculator-result")
+
+
+            clone.querySelector(".control-calculator-title").value  = item.title
+            if (item.result == null || item.result === "") {
+                controlPanellResultField.textContent = "-"
+            }else{
+                controlPanellResultField.textContent =  `${item.a} ${item.operation} ${item.b} = ${item.result}`
+            }
+            if(item.minimized == false){
+                clone.querySelector(".control-minimize-button").textContent = "Minimize"
+            }else{
+                clone.querySelector(".control-minimize-button").textContent = "Open"
+            }
+
+        //result field 
+        const resultField = clone.querySelector(".control-calculator-result")
+
+        resultField.classList.toggle("error-message", item.error !== "");
+             
+        if (item.error !== ""){
+        resultField.textContent = item.error;
+        }  else if (item.result !== "" && item.result != null) {
+            resultField.textContent = item.result;
+        } else {
+         resultField.textContent = "—";
+        }
+            
+
+
+
+
+            this.panel.appendChild(clone)
+        })
+
+        
+    };
+
+    this.render = function() {
+        this.renderCards();
+        this.renderPanel();
+        this.updateCheckboxStyleForDrag()
+
+    };
+
+    this.updateCalculatorView = function(id) {
+        const calculator = this.findCalculator(id);
+        if (!calculator) return;
+    
+        const currentCard = this.cards.querySelector(
+            `.calculator[data-id="${id}"]`
+        );
+    
+        if (currentCard) {
+            const resultField = currentCard.querySelector(".result");
+    
+            resultField.classList.toggle(
+                "error-message",
+                calculator.error !== ""
+            );
+    
+            if (calculator.error !== "") {
+                resultField.textContent = calculator.error;
+            } else if (calculator.result !== "" && calculator.result != null) {
+                resultField.textContent = calculator.result;
+            } else {
+                resultField.textContent = "—";
+            }
+        }
+
+    
+        this.renderPanel();
+    };
+
+    /* -------------------- Persistence -------------------- */
+    this.saveCalculators = function() {
+        // TODO: serialize this.calculators and handle storage errors.
+        // Save data, not HTML or references to DOM elements.
+     
+        
+
+        
+        try{
+            const calculatorList = JSON.stringify(this.calculators)
+            localStorage.setItem("calculators",  calculatorList)
+        }catch(error){
+            console.error("Failed to save calculators:", error);
+            return;
+        }
+        
+        try{
+            localStorage.setItem("nextId", this.nextId)
+        }catch(error){
+            console.error("Failed to save nextID:", error);
+            return;
+        }
+
+        try{
+           const aaa =  document.querySelector(".advansed-druggable").checked
+            const checkedValue = JSON.stringify(aaa)
+            
+            localStorage.setItem("checkbox", checkedValue)
+        }catch(error){
+            console.error("Failed to save checkbox value:", error);
+            return;
+        }
+    };
+
+    this.loadCalculators = function() {
+        // TODO: read, parse and validate saved data.
+        // Restore nextId from the highest saved numeric ID.
+        // Preserve an intentionally empty list.
+        const currentCalculators = localStorage.getItem("calculators")
+        if(currentCalculators === null) return
+
+        let  validCalculators 
+   
+       
+        try{
+       const calculatorsList = JSON.parse(currentCalculators)
+        if (!Array.isArray(calculatorsList)) return;
+  
+        const unitIDset = new Set()
+         validCalculators = calculatorsList.filter(element =>{
+           if(element === null ) return false;
+           if(typeof element !== "object")  return false;
+           if(Array.isArray(element)) return false;
+           if(typeof element.id !== "string") return false;
+
+           //---------------------------------------------//
+           const parts = element.id.split("-")
+           if(parts.length !== 2) return false;
+           const idNumber = Number(parts[1]);
+           if(!/^[0-9]+$/.test(parts[1])) return false;
+           if(!Number.isSafeInteger(idNumber)) return false;
+           if(String(idNumber) !== parts[1]) return false
+           if(!element.id.startsWith("calc-") ) return false;
+           if(idNumber <= 0) return false;
+           if(unitIDset.has(idNumber)) return false;
+           unitIDset.add(idNumber)
+           
+           return true
+        }
+
+        );
+        
+        }catch(error){
+            console.error("Failed to load calculators:", error);
+            return;
+        }
+
+        const arr = []
+        validCalculators.forEach(element => {
+            const parts = element.id.split("-")
+            const idNumber = Number(parts[1])
+            arr.push(idNumber)
+            
+        });
+        
+
+        
+
+        let nextIDNumber
+        let checkValue = false
+        const lastNumber = localStorage.getItem("nextId")
+        if(lastNumber != null ) {
+             nextIDNumber = Number(lastNumber)
+             if( Number.isSafeInteger(nextIDNumber) && nextIDNumber > 0 ){
+                checkValue = true
+             } 
+        }
+
+        const maxValue = Math.max(0, ...arr)
+        if( !Number.isSafeInteger(maxValue +1 ) ) return
+        if (checkValue) {
+            if( !Number.isSafeInteger(nextIDNumber +1 ) ) return
+            this.nextId = Math.max(maxValue + 1, nextIDNumber);
+        } else {
+            this.nextId = maxValue + 1;
+        }
+        this.calculators = validCalculators
+
+        if(this.calculators.length === 0){
+            this.nextId = 1
+        }
+
+
+        const currentstatus = localStorage.getItem('checkbox')
+
+        if(currentstatus == null) return
+
+        const value = JSON.parse(currentstatus)
+
+        this.advansedDraggable.checked  = value
+
+
+    };
+   
+    /* -------------------- Initialization -------------------- */
+    this.init = function() {
+        this.initVars();
+        this.loadCalculators();
+        this.bindEvents();
+        this.render();
+        this.initDrag();
+      
+    };
+
+    this.init();
+};
+window.calculator = new window.CalculatorApp({
+    cards: '.calculator-list',
+    panel: '.calculator-control-list'
+})
+
+
+
+/*
     this.initDrag = function() {
 
         // TODO: connect your drag-and-drop component to both views.
@@ -893,321 +1442,4 @@ window.CalculatorApp = function(options) {
 
 
     };
-
-    /* -------------------- Rendering -------------------- */
-    this.renderCards = function() {
-        // TODO: display this.calculators as cards.
-        // You can adapt your existing Calculator class for this view.
-        //clean caculatores field
-        this.cards.innerHTML = "";
-      
-        this.calculators.forEach(item => {
-            const clone = this.calculatorTemplate.content.cloneNode(true);
-            clone.querySelector(".calculator").dataset.id = item.id;
-  
-            clone.querySelector(".calculator-window-title").textContent  = item.title
-            clone.querySelector(".first-number").value = item.a;
-            clone.querySelector(".second-number").value = item.b;
-
-            const calculatorContent = clone.querySelector(".calculator-content");
-            const minimizedContent = clone.querySelector(".calculator-minimized-content");
-            const minimizedResult = clone.querySelector(".calculator-minimized-result");
-            const minimizeButton = clone.querySelector(".minimize-calculator-button")
-
-            
-
-            if(item.minimized){
-                calculatorContent.hidden = true;
-                minimizedContent.hidden = false;
-                minimizeButton.textContent = "+"
-
-            }else{
-                calculatorContent.hidden = false;
-                minimizedContent.hidden = true;
-                minimizeButton.textContent = "-"
-            }
-        
-            if(item.minimized){
-                if((item.result === "" && item.error == "")) {
-                    minimizedResult.textContent = "-"
-                }else{
-                    if(item.result === "" && item.error !== ""){
-                        minimizedResult.textContent = item.error
-                        minimizedResult.classList.toggle("error-message", item.error !== "");
-                    }else{
-                        minimizedResult.textContent = `${item.a} ${item.operation} ${item.b} = ${item.result}`
-                    }
-                     
-                }
-               
-            } else{
-                minimizedResult.textContent = ""
-            }
-
-
-            //checkbox
-            clone.querySelector(".clear-operator-checkbox").checked = item.resetOperation
-
-
-
-            const operators = clone.querySelectorAll(".operator-option");
-            operators.forEach((button) =>{
-                if(button.dataset.operatorValue === item.operation){
-                    button.setAttribute("aria-pressed", "true")
-                }else{
-                    button.setAttribute("aria-pressed", "false")
-                }
-            })
-
-
-
-                 //result field 
-             const resultField = clone.querySelector(".result")
-
-            resultField.classList.toggle("error-message", item.error !== "");
-
-            if (item.error !== "")  {
-                resultField.textContent = item.error;
-            }  else if (item.result !== "" && item.result != null) {
-                resultField.textContent = item.result;
-            } else {
-                resultField.textContent = "—";
-            }
-
-            this.cards.append(clone)
-
-        })
-
-     
-        
-    };
-
-    this.renderPanel = function() {
-        // TODO: display the same array as control panel rows
-        this.panel.innerHTML = ""
-     
-        this.calculators.forEach(item => {
-
-            const clone = this.controlPanelTamplate.content.cloneNode(true);
-            clone.querySelector(".calculator-control-row").dataset.id = item.id;
-            const controlPanellResultField = clone.querySelector(".control-calculator-result")
-
-
-            clone.querySelector(".control-calculator-title").value  = item.title
-            if (item.result == null || item.result === "") {
-                controlPanellResultField.textContent = "-"
-            }else{
-                controlPanellResultField.textContent =  `${item.a} ${item.operation} ${item.b} = ${item.result}`
-            }
-            if(item.minimized == false){
-                clone.querySelector(".control-minimize-button").textContent = "Minimize"
-            }else{
-                clone.querySelector(".control-minimize-button").textContent = "Open"
-            }
-
-        //result field 
-        const resultField = clone.querySelector(".control-calculator-result")
-
-        resultField.classList.toggle("error-message", item.error !== "");
-             
-        if (item.error !== ""){
-        resultField.textContent = item.error;
-        }  else if (item.result !== "" && item.result != null) {
-            resultField.textContent = item.result;
-        } else {
-         resultField.textContent = "—";
-        }
-            
-
-
-
-
-            this.panel.appendChild(clone)
-        })
-
-        
-    };
-
-    this.render = function() {
-        this.renderCards();
-        this.renderPanel();
-        this.updateCheckboxStyleForDrag()
-
-    };
-
-    this.updateCalculatorView = function(id) {
-        const calculator = this.findCalculator(id);
-        if (!calculator) return;
-    
-        const currentCard = this.cards.querySelector(
-            `.calculator[data-id="${id}"]`
-        );
-    
-        if (currentCard) {
-            const resultField = currentCard.querySelector(".result");
-    
-            resultField.classList.toggle(
-                "error-message",
-                calculator.error !== ""
-            );
-    
-            if (calculator.error !== "") {
-                resultField.textContent = calculator.error;
-            } else if (calculator.result !== "" && calculator.result != null) {
-                resultField.textContent = calculator.result;
-            } else {
-                resultField.textContent = "—";
-            }
-        }
-
-    
-        this.renderPanel();
-    };
-
-    /* -------------------- Persistence -------------------- */
-    this.saveCalculators = function() {
-        // TODO: serialize this.calculators and handle storage errors.
-        // Save data, not HTML or references to DOM elements.
-     
-        
-
-        
-        try{
-            const calculatorList = JSON.stringify(this.calculators)
-            localStorage.setItem("calculators",  calculatorList)
-        }catch(error){
-            console.error("Failed to save calculators:", error);
-            return;
-        }
-        
-        try{
-            localStorage.setItem("nextId", this.nextId)
-        }catch(error){
-            console.error("Failed to save nextID:", error);
-            return;
-        }
-
-        try{
-           const aaa =  document.querySelector(".advansed-druggable").checked
-            const checkedValue = JSON.stringify(aaa)
-            
-            localStorage.setItem("checkbox", checkedValue)
-        }catch(error){
-            console.error("Failed to save checkbox value:", error);
-            return;
-        }
-    };
-
-    this.loadCalculators = function() {
-        // TODO: read, parse and validate saved data.
-        // Restore nextId from the highest saved numeric ID.
-        // Preserve an intentionally empty list.
-        const currentCalculators = localStorage.getItem("calculators")
-        if(currentCalculators === null) return
-
-        let  validCalculators 
-   
-       
-        try{
-       const calculatorsList = JSON.parse(currentCalculators)
-        if (!Array.isArray(calculatorsList)) return;
-  
-        const unitIDset = new Set()
-         validCalculators = calculatorsList.filter(element =>{
-           if(element === null ) return false;
-           if(typeof element !== "object")  return false;
-           if(Array.isArray(element)) return false;
-           if(typeof element.id !== "string") return false;
-
-           //---------------------------------------------//
-           const parts = element.id.split("-")
-           if(parts.length !== 2) return false;
-           const idNumber = Number(parts[1]);
-           if(!/^[0-9]+$/.test(parts[1])) return false;
-           if(!Number.isSafeInteger(idNumber)) return false;
-           if(String(idNumber) !== parts[1]) return false
-           if(!element.id.startsWith("calc-") ) return false;
-           if(idNumber <= 0) return false;
-           if(unitIDset.has(idNumber)) return false;
-           unitIDset.add(idNumber)
-           
-           return true
-        }
-
-        );
-        
-        }catch(error){
-            console.error("Failed to load calculators:", error);
-            return;
-        }
-
-        const arr = []
-        validCalculators.forEach(element => {
-            const parts = element.id.split("-")
-            const idNumber = Number(parts[1])
-            arr.push(idNumber)
-            
-        });
-        
-
-        
-
-        let nextIDNumber
-        let checkValue = false
-        const lastNumber = localStorage.getItem("nextId")
-        if(lastNumber != null ) {
-             nextIDNumber = Number(lastNumber)
-             if( Number.isSafeInteger(nextIDNumber) && nextIDNumber > 0 ){
-                checkValue = true
-             } 
-        }
-
-        const maxValue = Math.max(0, ...arr)
-        if( !Number.isSafeInteger(maxValue +1 ) ) return
-        if (checkValue) {
-            if( !Number.isSafeInteger(nextIDNumber +1 ) ) return
-            this.nextId = Math.max(maxValue + 1, nextIDNumber);
-        } else {
-            this.nextId = maxValue + 1;
-        }
-        this.calculators = validCalculators
-
-        if(this.calculators.length === 0){
-            this.nextId = 1
-        }
-
-
-        const currentstatus = localStorage.getItem('checkbox')
-
-        if(currentstatus == null) return
-
-        const value = JSON.parse(currentstatus)
-
-        this.advansedDraggable.checked  = value
-
-
-    };
-   
-
-
-
-
-
-    /* -------------------- Initialization -------------------- */
-    this.init = function() {
-        this.initVars();
-        this.loadCalculators();
-        this.bindEvents();
-        this.render();
-        this.initDrag();
-      
-    };
-
-    this.init();
-};
-
-
-window.calculator = new window.CalculatorApp({
-    cards: '.calculator-list',
-    panel: '.calculator-control-list'
-})
+    */
