@@ -463,7 +463,6 @@ window.CalculatorApp = function(options) {
 /////////////////////////////////////////////////////
 ////////////////////////////
 
-
         this.initDrag = function() {
             let isSimple
      
@@ -483,7 +482,6 @@ window.CalculatorApp = function(options) {
             let currentCalculator = null
     
             document.addEventListener('mousedown', (event) =>{
-                if(this.advansedDraggable.checked){
                 const controlField = event.target.closest('.calculator-control-list');
                 const mainField = event.target.closest('.calculator-list');
     
@@ -501,18 +499,24 @@ window.CalculatorApp = function(options) {
                     draggedCalculatorFieldClass = '.calculator-list'
                     
                 }
-                
-    
-    
-    
+                if(this.advansedDraggable.checked){
+
                 if(event.target.closest(draggedCalculatorButtonClass)){
                     isDragAllowed = true
                     event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
                     currentCalculator = event.target.closest(draggedCalculatorClass)
                 }
+
     
                 
-            }
+                  }
+                 if(!this.advansedDraggable.checked){
+                if(event.target.closest(draggedCalculatorButtonClass)){
+                    isDragAllowed = true
+                    event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                    currentCalculator = event.target.closest(draggedCalculatorClass)
+                }
+                }
             })
             document.addEventListener('mouseup', (event) =>{
                 if(this.advansedDraggable.checked){
@@ -525,10 +529,21 @@ window.CalculatorApp = function(options) {
         
                     }
                 }
-             }
+             }                
+                if(!this.advansedDraggable.checked){
+                if(!currentCalculator) return
+                if(event.target.closest(draggedCalculatorButtonClass)){
+                    isDragAllowed = false
+                    event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                    if(!isDragging){
+                        currentCalculator = null
+        
+                    }
+                }
+            }
             })
             document.addEventListener('dragstart', (event) =>{
-                if(this.advansedDraggable.checked){
+            if(this.advansedDraggable.checked){
                 if(!isDragAllowed){
                     event.preventDefault()
                     return
@@ -539,11 +554,23 @@ window.CalculatorApp = function(options) {
                 const dragPreview = currentCalculator.cloneNode(true);
                 dragPreview.classList.add('drag-preview')
              }
+            if(!this.advansedDraggable.checked){
+                if(!isDragAllowed){
+                    event.preventDefault()
+                    return
+                }
+                isDragging = true
+                event.dataTransfer.setData("text/plain", currentCalculator.dataset.id);
+        
+                const dragPreview = currentCalculator.cloneNode(true);
+                dragPreview.classList.add('drag-preview')
+        
+            }
            
             })
             document.addEventListener('dragover', (event) => {
                 
-                if(this.advansedDraggable.checked){
+            if(this.advansedDraggable.checked){
                     event.preventDefault();
                 const targetCalculator = event.target.closest(draggedCalculatorClass);
             
@@ -563,9 +590,67 @@ window.CalculatorApp = function(options) {
                 
     
             }
+            if(!this.advansedDraggable.checked && draggedCalculatorFieldClass === '.calculator-control-list'){
+      
+                event.preventDefault();
+            
+                const targetCalculator = event.target.closest(draggedCalculatorClass);
+            
+                if (!targetCalculator) return;
+                if (!targetCalculator || targetCalculator === currentCalculator) return;
+                const targetCalculatorRect = targetCalculator.getBoundingClientRect();
+            
+                let position = event.clientY - targetCalculatorRect.top;
+                let targetCalculatorHalfHeight = targetCalculatorRect.height / 2;
+            
+                targetCalculator.classList.remove('drop-before', 'drop-after');
+        
+                dragField.querySelectorAll(`${draggedCalculatorClass}.drag-target`).forEach((calculator) => {
+                    if (calculator !== targetCalculator) {
+                        calculator.classList.remove('drag-target');
+                    }
+                });
+                targetCalculator.classList.add('drag-target');
+                    if (position < targetCalculatorHalfHeight) {
+                        targetCalculator.classList.add('drop-before');
+                    } else {
+                        targetCalculator.classList.add('drop-after');
+                    }
+            }
+            if(!this.advansedDraggable.checked && draggedCalculatorFieldClass === '.calculator-list'){
+                event.preventDefault();
+            
+                const targetCalculator = event.target.closest('.calculator');
+        
+            
+                if (!targetCalculator) return;
+                if (!targetCalculator || targetCalculator === currentCalculator) return;
+                const targetCalculatorRect = targetCalculator.getBoundingClientRect();
+            
+                let position = event.clientX - targetCalculatorRect.left;
+                let targetCalculatorHalfWidth = targetCalculatorRect.width / 2;
+        
+                targetCalculator.classList.remove('advansed-style');
+                targetCalculator.classList.remove('drop-before', 'drop-after');
+        
+                dragField.querySelectorAll('.calculator.drag-target').forEach((calculator) => {
+                    if (calculator !== targetCalculator) {
+                        calculator.classList.remove('drag-target');
+                    }
+                });
+                targetCalculator.classList.add('drag-target');
+            
+    
+                if (position < targetCalculatorHalfWidth) {
+                    targetCalculator.classList.add('drop-before');
+                } else {
+                    targetCalculator.classList.add('drop-after');
+                }
+            }
+
             })
             document.addEventListener('dragleave', (event) => {
-                if(this.advansedDraggable.checked){
+            if(this.advansedDraggable.checked){
                 const targetCalculator = event.target.closest(draggedCalculatorClass);
                 if (!targetCalculator) return;
                 if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
@@ -574,6 +659,15 @@ window.CalculatorApp = function(options) {
                 targetCalculator.classList.remove('drag-target');
                 targetCalculator.classList.remove('advansed-style');
              }
+            if(!this.advansedDraggable.checked){
+                const targetCalculator = event.target.closest(draggedCalculatorClass);
+                if (!targetCalculator) return;
+                if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
+                    return;
+                }
+                targetCalculator.classList.remove('drag-target');
+                targetCalculator.classList.remove('drop-before', 'drop-after','advansed-style');
+            }
             })
             document.addEventListener('drop', (event) =>{
                 if(this.advansedDraggable.checked){
@@ -679,130 +773,18 @@ window.CalculatorApp = function(options) {
                     }
                  } 
                 }
-            })
-            document.addEventListener('dragend', (event) =>{
-                if(this.advansedDraggable.checked){
-                isDragAllowed = false
-                isDragging = false;
-                event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
-                currentCalculator = null
-                dragField.querySelectorAll(draggedCalculatorClass).forEach((calculator) => {
-                    calculator.classList.remove('drag-target', 'advansed-style');
-                });
-                if(draggedCalculatorClass === '.calculator-control-row'){
-                    this.moveCalculator(true)
-                }else if(draggedCalculatorClass === '.calculator'){
-                    this.moveCalculator()
-                }
-            }
-                
-            })
-    
-            
-            // TODO: connect your drag-and-drop component to both views.
-            // Choose how it reports the requested reorder to CalculatorApp.
-            // Keep drag mechanics separate from calculator data and storage.
-            const calculatorDragField = document.querySelector('.calculator-list')
-            const controlDragField = document.querySelector(".calculator-control-list")
-
-            
-            //drag value for control panel
-            let isDragAllowedInControlPanel = false
-            //dragstart value 
-            let isDraggingInControlPanel = false
-            let currentCalculatorInControlPanel = null
-    
-    
-            controlDragField.addEventListener('mousedown', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(event.target.closest('.control-drag-handle')){
-                    isDragAllowed = true
-                    event.target.closest('.calculator-control-row').setAttribute("draggable", isDragAllowed)
-                    currentCalculator = event.target.closest('.calculator-control-row')
-                }
-            }
-        
-            })
-            controlDragField.addEventListener('mouseup', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(!currentCalculator) return
-                if(event.target.closest('.control-drag-handle')){
-                    isDragAllowed = false
-                    event.target.closest('.calculator-control-row').setAttribute("draggable", isDragAllowed)
-                    if(!isDragging){
-                        currentCalculator = null
-        
-                    }
-                }
-            }
-            })
-            controlDragField.addEventListener('dragstart', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(!isDragAllowed){
-                    event.preventDefault()
-                    return
-                }
-                isDragging = true
-                event.dataTransfer.setData("text/plain", currentCalculator.dataset.id);
-        
-                const dragPreview = currentCalculator.cloneNode(true);
-                dragPreview.classList.add('drag-preview')
-        
-            }
-            })
-            controlDragField.addEventListener('dragover', (event) => {
-                if(!this.advansedDraggable.checked){
-                event.preventDefault();
-            
-                const targetCalculator = event.target.closest('.calculator-control-row');
-            
-                if (!targetCalculator) return;
-                if (!targetCalculator || targetCalculator === currentCalculator) return;
-                const targetCalculatorRect = targetCalculator.getBoundingClientRect();
-            
-                let position = event.clientY - targetCalculatorRect.top;
-                let targetCalculatorHalfHeight = targetCalculatorRect.height / 2;
-            
-                targetCalculator.classList.remove('drop-before', 'drop-after');
-        
-                controlDragField.querySelectorAll('.calculator-control-row.drag-target').forEach((calculator) => {
-                    if (calculator !== targetCalculator) {
-                        calculator.classList.remove('drag-target');
-                    }
-                });
-                targetCalculator.classList.add('drag-target');
-                    if (position < targetCalculatorHalfHeight) {
-                        targetCalculator.classList.add('drop-before');
-                    } else {
-                        targetCalculator.classList.add('drop-after');
-                    }
-                }
-               
-            })
-            controlDragField.addEventListener('dragleave', (event) => {
-                if(!this.advansedDraggable.checked){
-                const targetCalculator = event.target.closest('.calculator-control-row');
-                if (!targetCalculator) return;
-                if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
-                    return;
-                }
-                targetCalculator.classList.remove('drag-target');
-                targetCalculator.classList.remove('drop-before', 'drop-after','advansed-style');
-            }
-            })
-            controlDragField.addEventListener('drop', (event) =>{
-                if(!this.advansedDraggable.checked){
+                if(!this.advansedDraggable.checked  && draggedCalculatorFieldClass === '.calculator-control-list'){
                 const calcId = event.dataTransfer.getData("text/plain")
-        
-                const draggedCaculator = controlDragField.querySelector(`[data-id="${calcId}"]`);
-                const targetCaculator = event.target.closest('.calculator-control-row')
+
+                const draggedCaculator = dragField.querySelector(`[data-id="${calcId}"]`);
+                const targetCaculator = event.target.closest(draggedCalculatorClass)
         
         
         
                 if(!draggedCaculator) return;
                 if(draggedCaculator === targetCaculator) return;
         
-                const fieldRect = controlDragField.getBoundingClientRect()
+                const fieldRect = dragField.getBoundingClientRect()
         
         
                  if(event.clientX >= fieldRect.left  && event.clientX <= fieldRect.right &&
@@ -825,7 +807,7 @@ window.CalculatorApp = function(options) {
                 
                     }else{
         
-                        const allCaculators = Array.from(controlDragField.querySelectorAll(".calculator-control-row")).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
+                        const allCaculators = Array.from(dragField.querySelectorAll(draggedCalculatorClass)).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
                         
                         const lastCalculator = allCaculators[allCaculators.length - 1]
         
@@ -834,21 +816,21 @@ window.CalculatorApp = function(options) {
         
                         
         
-                        if(event.clientY > lastCalculatorRect.bottom){
+                        if(event.clientY > lastCalculatorRect.button){
         
         
-                            controlDragField.append(draggedCaculator)
+                            dragField.append(draggedCaculator)
                             return
                         }
         
                         for( let i = 0; i < allCaculators.length -1; i ++){
                             const caculatorRect = allCaculators[i].getBoundingClientRect()
             
-                            if(caculatorRect.bottom < event.clientY){
+                            if(caculatorRect.button < event.clientY){
                                 allCaculators[i].after(draggedCaculator)
                                 return
                             } else if(event.clientY < caculatorRect.top){
-                                controlDragField.prepend(draggedCaculator)
+                                dragField.prepend(draggedCaculator)
                             return
                         }
                      }
@@ -856,189 +838,102 @@ window.CalculatorApp = function(options) {
                  }
         
           
-                 controlDragField.querySelectorAll('.calculator-control-row').forEach((calculator) => {
+                 dragField.querySelectorAll(draggedCalculatorClass).forEach((calculator) => {
                     calculator.classList.remove('drop-before', 'drop-after');
                 });
-            }
-            })
-            controlDragField.addEventListener('dragend', (event) =>{
-                if(!this.advansedDraggable.checked){
-                isDragAllowed = false
-                isDragging = false;
-                event.target.closest('.calculator-control-row').setAttribute("draggable", isDragAllowed)
-                currentCalculator = null
-                controlDragField.querySelectorAll('.calculator-control-row').forEach((calculator) => {
-                    calculator.classList.remove('drag-target', 'drop-before', 'drop-after', 'advansed-style');
-                });
-                this.moveCalculator(true)
-            }
-                
-            })
-        
-        
-            calculatorDragField.addEventListener('mousedown', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(event.target.closest('.drag-calculator-button')){
-                    isDragAllowed = true
-                    event.target.closest('.calculator').setAttribute("draggable", isDragAllowed)
-                    currentCalculator = event.target.closest('.calculator')
                 }
-            }
-            })
-            calculatorDragField.addEventListener('mouseup', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(!currentCalculator) return
-        
-                if(event.target.closest('.drag-calculator-button')){
-                    isDragAllowed = false
-                    event.target.closest('.calculator').setAttribute("draggable", isDragAllowed)
-                    if(!isDragging){
-                        currentCalculator = null
-            
-                    }
+                if(!this.advansedDraggable.checked && draggedCalculatorFieldClass === '.calculator-list'){
 
-        
-                }
-            }
-            })
-            calculatorDragField.addEventListener('dragstart', (event) =>{
-                if(!this.advansedDraggable.checked){
-                if(!isDragAllowed){
-                    event.preventDefault()
-                    return
-                }
-                isDragging = true
-                event.dataTransfer.setData("text/plain", currentCalculator.dataset.id);
-            }
-           
-            })
-            calculatorDragField.addEventListener('dragover', (event) => {
-                if(!this.advansedDraggable.checked){
-                event.preventDefault();
+                    const calcId = event.dataTransfer.getData("text/plain")
             
-                const targetCalculator = event.target.closest('.calculator');
-        
+                        const draggedCaculator = dragField.querySelector(`[data-id="${calcId}"]`);
+                        const targetCaculator = event.target.closest('.calculator')
+                        if(!draggedCaculator) return;
+                        if(draggedCaculator === targetCaculator) return;
             
-                if (!targetCalculator) return;
-                if (!targetCalculator || targetCalculator === currentCalculator) return;
-                const targetCalculatorRect = targetCalculator.getBoundingClientRect();
+                        const fieldRect = dragField.getBoundingClientRect()
             
-                let position = event.clientX - targetCalculatorRect.left;
-                let targetCalculatorHalfWidth = targetCalculatorRect.width / 2;
-        
-                targetCalculator.classList.remove('advansed-style');
-                targetCalculator.classList.remove('drop-before', 'drop-after');
-        
-                calculatorDragField.querySelectorAll('.calculator.drag-target').forEach((calculator) => {
-                    if (calculator !== targetCalculator) {
-                        calculator.classList.remove('drag-target');
-                    }
-                });
-                targetCalculator.classList.add('drag-target');
             
-    
-                if (position < targetCalculatorHalfWidth) {
-                    targetCalculator.classList.add('drop-before');
-                } else {
-                    targetCalculator.classList.add('drop-after');
-                }
-            }
-                
-            })
-            calculatorDragField.addEventListener('dragleave', (event) => {
-                if(!this.advansedDraggable.checked){
-                const targetCalculator = event.target.closest('.calculator');
+              
             
-                if (!targetCalculator) return;
+                         if(event.clientX >= fieldRect.left  && event.clientX <= fieldRect.right &&
+                            event.clientY >= fieldRect.top && event.clientY <= fieldRect.bottom
+                         ){
             
-                if (event.relatedTarget && targetCalculator.contains(event.relatedTarget)) {
-                    return;
-                }
-        
-                targetCalculator.classList.remove('drag-target');
-                targetCalculator.classList.remove('drop-before', 'drop-after');
-                targetCalculator.classList.remove('advansed-style');
-            }
+                            if(targetCaculator){
             
-            });
-            calculatorDragField.addEventListener('drop', (event) =>{
-                if(!this.advansedDraggable.checked){
-                const calcId = event.dataTransfer.getData("text/plain")
-        
-                    const draggedCaculator = calculatorDragField.querySelector(`[data-id="${calcId}"]`);
-                    const targetCaculator = event.target.closest('.calculator')
-                    if(!draggedCaculator) return;
-                    if(draggedCaculator === targetCaculator) return;
-        
-                    const fieldRect = calculatorDragField.getBoundingClientRect()
-        
-        
-          
-        
-                     if(event.clientX >= fieldRect.left  && event.clientX <= fieldRect.right &&
-                        event.clientY >= fieldRect.top && event.clientY <= fieldRect.bottom
-                     ){
-        
-                        if(targetCaculator){
-        
-                            const targetCaulatorRect = targetCaculator.getBoundingClientRect()
-                            let position = event.clientX - targetCaulatorRect.left
-        
-                            let targetCaculatorWidthHapfPart = targetCaulatorRect.width / 2
-        
-                            if(position >= targetCaculatorWidthHapfPart){
-                                targetCaculator.after(draggedCaculator)
+                                const targetCaulatorRect = targetCaculator.getBoundingClientRect()
+                                let position = event.clientX - targetCaulatorRect.left
+            
+                                let targetCaculatorWidthHapfPart = targetCaulatorRect.width / 2
+            
+                                if(position >= targetCaculatorWidthHapfPart){
+                                    targetCaculator.after(draggedCaculator)
+                                }else{
+                                    targetCaculator.before(draggedCaculator)
+                                }
+                          
                             }else{
-                                targetCaculator.before(draggedCaculator)
-                            }
-                      
-                        }else{
-                            const allCaculators = Array.from(calculatorDragField.querySelectorAll(".calculator")).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
-                            
-                            const lastCalculator = allCaculators[allCaculators.length - 1]
-        
-                            if(allCaculators.length == 0) return
-                            const lastCalculatorRect = lastCalculator.getBoundingClientRect()
-        
-                            if(event.clientX > lastCalculatorRect.right){
-                                calculatorDragField.append(draggedCaculator)
-                                return
-                            }
-        
-                            for( let i = 0; i < allCaculators.length -1; i ++){
-                                const caculatorRect = allCaculators[i].getBoundingClientRect()
-                
-                                if(caculatorRect.right < event.clientX){
-                                    allCaculators[i].after(draggedCaculator)
+                                const allCaculators = Array.from(dragField.querySelectorAll(".calculator")).filter(item => item.dataset.id !== draggedCaculator.dataset.id)
+                                
+                                const lastCalculator = allCaculators[allCaculators.length - 1]
+            
+                                if(allCaculators.length == 0) return
+                                const lastCalculatorRect = lastCalculator.getBoundingClientRect()
+            
+                                if(event.clientX > lastCalculatorRect.right){
+                                    dragField.append(draggedCaculator)
                                     return
-                                } else if(event.clientX < caculatorRect.left){
-                                    calculatorDragField.prepend(draggedCaculator)
-                                return
+                                }
+            
+                                for( let i = 0; i < allCaculators.length -1; i ++){
+                                    const caculatorRect = allCaculators[i].getBoundingClientRect()
+                    
+                                    if(caculatorRect.right < event.clientX){
+                                        allCaculators[i].after(draggedCaculator)
+                                        return
+                                    } else if(event.clientX < caculatorRect.left){
+                                        dragField.prepend(draggedCaculator)
+                                    return
+                                }
+                             }
                             }
                          }
-                        }
-                     }
-                     calculatorDragField.querySelectorAll('.calculator').forEach((calculator) => {
-                        calculator.classList.remove('drop-before', 'drop-after');
-                        
-                        
-                });
-            }
+                         dragField.querySelectorAll('.calculator').forEach((calculator) => {
+                            calculator.classList.remove('drop-before', 'drop-after');
+                            
+                            
+                    });
+                }
             })
-            calculatorDragField.addEventListener('dragend', (event) => {
-                if(!this.advansedDraggable.checked){
+            document.addEventListener('dragend', (event) =>{
                 isDragAllowed = false
                 isDragging = false;
-                event.target.closest('.calculator').setAttribute("draggable", isDragAllowed)
-                currentCalculator = null
-                calculatorDragField.querySelectorAll('.calculator').forEach((calculator) => {
-                    calculator.classList.remove('drag-target', 'drop-before', 'drop-after', 'advansed-style');
-                });
-                this.moveCalculator()
-            }
-            })
-        
-            
+                if(this.advansedDraggable.checked){
+                    event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                    currentCalculator = null
+                    dragField.querySelectorAll(draggedCalculatorClass).forEach((calculator) => {
+                        calculator.classList.remove('drag-target', 'advansed-style');
+                    });
+                    if(draggedCalculatorClass === '.calculator-control-row'){
+                        this.moveCalculator(true)
+                    }else if(draggedCalculatorClass === '.calculator'){
+                        this.moveCalculator()
+                    }
+                }
+                if(!this.advansedDraggable.checked){
+                    event.target.closest(draggedCalculatorClass).setAttribute("draggable", isDragAllowed)
+                    currentCalculator = null
+                    dragField.querySelectorAll(draggedCalculatorClass).forEach((calculator) => {
+                        calculator.classList.remove('drag-target', 'drop-before', 'drop-after', 'advansed-style');
+                    });
+                    if(draggedCalculatorClass === '.calculator-control-row'){
+                        this.moveCalculator(true)
+                    }else if(draggedCalculatorClass === '.calculator'){
+                        this.moveCalculator()
+                    }
+                }            
+            })    
         };
 
     /* -------------------- Rendering -------------------- */

@@ -5,7 +5,7 @@ function DragAndDrop(container, itemSelector, handleSelector) {
     this.handleSelector = handleSelector
   
 }
-/*
+
  // TODO: connect your drag-and-drop component to both views.
             // Choose how it reports the requested reorder to CalculatorApp.
             // Keep drag mechanics separate from calculator data and storage.
@@ -39,6 +39,7 @@ function DragAndDrop(container, itemSelector, handleSelector) {
                 }
         
             })
+            
             controlDragField.addEventListener('mouseup', (event) =>{
                 if(!currentCalculator) return
                 if(event.target.closest('.control-drag-handle')){
@@ -333,4 +334,4 @@ function DragAndDrop(container, itemSelector, handleSelector) {
                     calculator.classList.remove('drag-target', 'drop-before', 'drop-after', 'advansed-style');
                 });
                 this.moveCalculator()
-            })*/
+            })
